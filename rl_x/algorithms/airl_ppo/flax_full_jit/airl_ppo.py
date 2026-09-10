@@ -64,17 +64,19 @@ class AIRL_PPO:
         self.os_shape = self.train_env.single_observation_space.shape
         self.as_shape = self.train_env.single_action_space.shape
         self.horizon = self.train_env.horizon
-        self.dim = np.prod(self.as_shape).item()
-        self.retraining = config.algorithm.retraining
 
         # AIRL Attributes
         self.data_path = config.algorithm.data_path
+        self.nr_epochs_disc = config.algorithm.nr_epochs_disc
         self.learning_rate_disc = config.algorithm.learning_rate_disc
         self.env_reward_frac = config.algorithm.env_reward_frac
         self.handle_absorbing_states = config.algorithm.handle_absorbing_states
         self.gp_lambda = config.algorithm.gp_lambda
         self.gp_alpha = config.algorithm.gp_alpha
-        self.num_data_samples = np.load(self.data_path)["states"].shape[0]
+        self.num_data_samples = prepare_expert_data(self.data_path)["states"].shape[0]
+
+        if self.minibatch_size > self.batch_size:
+            raise ValueError("Minibatch size must not be larger than batch size")
 
         if self.evaluation_and_save_frequency % self.batch_size != 0:
             raise ValueError("Evaluation and save frequency must be a multiple of batch size")
@@ -98,7 +100,7 @@ class AIRL_PPO:
 
         def linear_schedule_disc(count):
             fraction = 1.0 - (count // (self.nr_minibatches * self.nr_epochs_disc)) / ((self.nr_updates * self.nr_epochs) / self.nr_epochs_disc)
-            return self.learning_rate * fraction
+            return self.learning_rate_disc * fraction
 
         learning_rate = linear_schedule if self.anneal_learning_rate else self.learning_rate
         learning_rate_disc = linear_schedule_disc if self.anneal_learning_rate else self.learning_rate_disc
@@ -106,7 +108,7 @@ class AIRL_PPO:
         self.key, sampling_key = jax.random.split(self.key)
         env_state = self.train_env.reset(reset_key, False)
         action = jnp.array([self.train_env.single_action_space.sample(sampling_key)])
-        log_prob = jnp.log(self.std_dev) * jnp.ones((1, np.prod(self.as_shape).item()))
+        log_prob = jnp.zeros_like(env_state.terminated, dtype=jnp.float32)
         self.H_terminal = jnp.sum(jnp.log(self.train_env.single_action_space.high - self.train_env.single_action_space.low))
         self.as_high = self.train_env.single_action_space.high[0]
         self.as_low = self.train_env.single_action_space.low[0]
@@ -248,22 +250,18 @@ class AIRL_PPO:
                     batch_log_probs = log_probs.reshape(-1)
 
                     # Expert batch
-                    key, shuffle_key = jax.random.split(key)
-                    perm = jax.random.permutation(shuffle_key, expert_states.shape[0])
-                    expert_states = expert_states[perm]
-                    expert_actions = expert_actions[perm]
-                    batch_expert_states = expert_states[:self.batch_size]
-                    batch_expert_actions = expert_actions[:self.batch_size]
+                    key, expert_key = jax.random.split(key)
+                    expert_indices = jax.random.randint(expert_key, (self.batch_size,), 0, expert_states.shape[0])
+                    batch_expert_states = expert_states[expert_indices]
+                    batch_expert_actions = expert_actions[expert_indices]
                     expert_labels = jnp.ones((self.batch_size, 1), dtype=jnp.float32)
                     rollout_labels = jnp.zeros((self.batch_size, 1), dtype=jnp.float32)
 
                     batch_next_states = next_states.reshape((-1,) + self.os_shape)
                     batch_absorbing = terminations.reshape(-1)
 
-                    expert_next_states = expert_next_states[perm]
-                    expert_absorbing = expert_absorbing[perm]
-                    batch_expert_next_states = expert_next_states[:self.batch_size]
-                    batch_expert_absorbing = expert_absorbing[:self.batch_size]
+                    batch_expert_next_states = expert_next_states[expert_indices]
+                    batch_expert_absorbing = expert_absorbing[expert_indices]
                     batch_expert_log_probs = get_log_prob(policy_state, batch_expert_states, batch_expert_actions)
 
                     vmap_airl_loss_fn = jax.vmap(airl_loss_fn, in_axes=(None, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0), out_axes=0)
@@ -274,6 +272,7 @@ class AIRL_PPO:
                     key, subkey = jax.random.split(key)
                     batch_indices_disc = jnp.tile(jnp.arange(self.batch_size), (self.nr_epochs_disc, 1))
                     batch_indices_disc = jax.random.permutation(subkey, batch_indices_disc, axis=1, independent=True)
+                    batch_indices_disc = batch_indices_disc[:, :self.nr_minibatches * self.minibatch_size]
                     batch_indices_disc = batch_indices_disc.reshape((self.nr_epochs_disc * self.nr_minibatches, self.minibatch_size))
 
                     def airl_minibatch_update(carry, minibatch_indices_disc):
@@ -322,7 +321,7 @@ class AIRL_PPO:
                                 terminations.flatten(),
                                 log_probs.flatten(),
                                 ),
-                                self.discriminator_state,
+                                discriminator_state,
                                 ).reshape(rewards.shape)
 
                     if self.handle_absorbing_states:
@@ -333,7 +332,7 @@ class AIRL_PPO:
                                     jnp.ones_like(terminations.flatten()),
                                     next_log_probs.reshape(-1,),
                                     ),
-                                    self.discriminator_state,
+                                    discriminator_state,
                                     ).reshape(rewards.shape)
                     else:
                         airl_reward_absorbing_state = jnp.asarray(0.0)
@@ -432,6 +431,7 @@ class AIRL_PPO:
                     key, subkey = jax.random.split(key)
                     batch_indices = jnp.tile(jnp.arange(self.batch_size), (self.nr_epochs, 1))
                     batch_indices = jax.random.permutation(subkey, batch_indices, axis=1, independent=True)
+                    batch_indices = batch_indices[:, :self.nr_minibatches * self.minibatch_size]
                     batch_indices = batch_indices.reshape((self.nr_epochs * self.nr_minibatches, self.minibatch_size))
 
                     def ppo_minibatch_update(carry, minibatch_indices):
@@ -600,6 +600,7 @@ class AIRL_PPO:
         with open(f"{self.save_path}/tmp/config_algorithm.json", "w") as f:
             json.dump(self.config.algorithm.to_dict(), f)
         shutil.make_archive(f"{self.save_path}/{self.latest_model_file_name}", "zip", f"{self.save_path}/tmp")
+        os.rename(f"{self.save_path}/{self.latest_model_file_name}.zip", f"{self.save_path}/{self.latest_model_file_name}")
         shutil.rmtree(f"{self.save_path}/tmp")
 
         if self.track_wandb:

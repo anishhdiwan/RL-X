@@ -3,7 +3,6 @@ from pathlib import Path
 from functools import partial
 import mujoco
 from mujoco import mjx
-from jax.scipy.spatial.transform import Rotation
 import jax
 import jax.numpy as jnp
 
@@ -52,11 +51,13 @@ class Humanoid:
         self.contact_cost_range = (-jnp.inf, 10.0)
         self.healthy_reward = 5.0
         self.reset_noise_scale = 1e-2
+        self.dt = self.mj_model.opt.timestep * self.nr_intermediate_steps
+        self.body_mass = jnp.array(self.mj_model.body_mass)
+        self.total_mass = self.mj_model.body_mass.sum()
 
         self.viewer = None
         if render:
-            dt = self.mj_model.opt.timestep * self.nr_intermediate_steps
-            self.viewer = MujocoViewer(self.mj_model, dt)
+            self.viewer = MujocoViewer(self.mj_model, self.dt)
             c_model = deepcopy(self.mj_model)
             c_data = mujoco.MjData(c_model)
             mujoco.mj_step(c_model, c_data, 1)
@@ -143,6 +144,7 @@ class Humanoid:
 
     @partial(jax.jit, static_argnums=(0,))
     def _step(self, state, action):
+        xy_position_before = self.get_mass_center(state.data)
         data, _ = jax.lax.scan(
             f=lambda data, _: (mjx.step(self.mjx_model, data.replace(ctrl=action)), None),
             init=state.data,
@@ -153,7 +155,7 @@ class Humanoid:
         state.info_episode_store["episode_length"] += 1
 
         next_observation = self.get_observation(data)
-        reward, r_info = self.get_reward(data)
+        reward, r_info = self.get_reward(data, xy_position_before)
         terminated = r_info["env_info/is_healthy"] < 0.5
         truncated = state.info_episode_store["episode_length"] >= self.horizon
         done = terminated | truncated
@@ -197,26 +199,21 @@ class Humanoid:
         return observation
 
 
-    def get_reward(self, data):
+    def get_mass_center(self, data):
+        return jnp.einsum("b,bj->j", self.body_mass, data.xipos)[:2] / self.total_mass
+
+
+    def get_reward(self, data, xy_position_before):
         """
         Rewards forward motion - control cost
         """
         torso_height = data.qpos[2]
-        base_orientation = [data.qpos[4], data.qpos[5], data.qpos[6], data.qpos[3]]
-        inverted_rotation = Rotation.from_quat(base_orientation).inv()
-        current_global_linear_velocity = data.qvel[:3]
-        current_local_linear_velocity = inverted_rotation.apply(current_global_linear_velocity)[0]
-        # forward_reward = self.forward_reward_weight * current_local_linear_velocity
+        current_global_linear_velocity = (self.get_mass_center(data) - xy_position_before) / self.dt
         forward_reward = self.forward_reward_weight * current_global_linear_velocity[0]
 
         min_z, max_z = self.healthy_z_range
         is_healthy = jnp.clip(jnp.nan_to_num(((torso_height > min_z) & (torso_height < max_z)).astype('float32')), min=0.0, max=1.0)
-        healthy_reward = jax.lax.cond(
-            self.terminate_when_unhealthy,
-            lambda _: self.healthy_reward,
-            lambda _: self.healthy_reward * is_healthy,
-            operand=None
-        )
+        healthy_reward = self.healthy_reward * is_healthy
 
         ctrl_cost = self.ctrl_cost_weight * jnp.sum(jnp.square(data.ctrl))
         

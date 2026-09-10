@@ -64,7 +64,6 @@ class NEAR_PPO:
         self.os_shape = self.train_env.single_observation_space.shape
         self.as_shape = self.train_env.single_action_space.shape
         self.horizon = self.train_env.horizon
-        self.dim = np.prod(self.as_shape).item()
 
         # NEAR Attributes
         self.data_path = config.algorithm.data_path
@@ -82,10 +81,16 @@ class NEAR_PPO:
         self.sigma_inference_ncsn = config.algorithm.sigma_inference_ncsn
         self.ncsnv1 = config.algorithm.ncsnv1
         self.env_reward_frac = config.algorithm.env_reward_frac
-        self.data_path = config.algorithm.data_path
+        self.handle_absorbing_states = config.algorithm.handle_absorbing_states
         self.nr_minibatches_ncsn = self.batch_size_ncsn // self.minibatch_size_ncsn
         self.state_based = config.algorithm.state_based
-        self.num_data_samples = np.load(self.data_path)["states"].shape[0]
+        self.num_data_samples = prepare_expert_data(self.data_path)["states"].shape[0]
+
+        if self.minibatch_size > self.batch_size:
+            raise ValueError("Minibatch size must not be larger than batch size")
+
+        if self.minibatch_size_ncsn > self.batch_size_ncsn:
+            raise ValueError("NCSN minibatch size must not be larger than NCSN batch size")
 
         if self.evaluation_and_save_frequency % self.batch_size != 0:
             raise ValueError("Evaluation and save frequency must be a multiple of batch size")
@@ -112,6 +117,7 @@ class NEAR_PPO:
 
         self.key, sampling_key = jax.random.split(self.key)
         env_state = self.train_env.reset(reset_key, False)
+        self.H_terminal = jnp.sum(jnp.log(self.train_env.single_action_space.high - self.train_env.single_action_space.low)) # terminal entropy assuming uniform policy
 
         self.policy_state = TrainState.create(
             apply_fn=self.policy.apply,
@@ -214,14 +220,11 @@ class NEAR_PPO:
 
 
                 # Expert batch
-                key, shuffle_key = jax.random.split(key)
-                perm = jax.random.permutation(shuffle_key, expert_states.shape[0])
-                expert_states = expert_states[perm]
-                expert_actions = expert_actions[perm]
-                expert_next_states = expert_next_states[perm]
-                batch_expert_states = expert_states[:self.batch_size_ncsn]
-                batch_expert_actions = expert_actions[:self.batch_size_ncsn]
-                batch_expert_next_states = expert_next_states[:self.batch_size_ncsn]
+                key, expert_key = jax.random.split(key)
+                expert_indices = jax.random.randint(expert_key, (self.batch_size_ncsn,), 0, expert_states.shape[0])
+                batch_expert_states = expert_states[expert_indices]
+                batch_expert_actions = expert_actions[expert_indices]
+                batch_expert_next_states = expert_next_states[expert_indices]
 
                 vmap_ncsn_loss_fn = jax.vmap(ncsn_loss_fn, in_axes=(None, 0, 0, 0, 0), out_axes=0)
                 safe_mean = lambda x: jnp.mean(x) if x is not None else x
@@ -231,6 +234,7 @@ class NEAR_PPO:
                 key, subkey = jax.random.split(key)
                 batch_indices_ncsn = jnp.tile(jnp.arange(self.batch_size_ncsn), (self.nr_epochs_ncsn, 1))
                 batch_indices_ncsn = jax.random.permutation(subkey, batch_indices_ncsn, axis=1, independent=True)
+                batch_indices_ncsn = batch_indices_ncsn[:, :self.nr_minibatches_ncsn * self.minibatch_size_ncsn]
                 batch_indices_ncsn = batch_indices_ncsn.reshape((self.nr_epochs_ncsn * self.nr_minibatches_ncsn, self.minibatch_size_ncsn))
 
                 def ncsn_minibatch_update(carry, minibatch_indices_ncsn):
@@ -466,6 +470,7 @@ class NEAR_PPO:
                     key, subkey = jax.random.split(key)
                     batch_indices = jnp.tile(jnp.arange(self.batch_size), (self.nr_epochs, 1))
                     batch_indices = jax.random.permutation(subkey, batch_indices, axis=1, independent=True)
+                    batch_indices = batch_indices[:, :self.nr_minibatches * self.minibatch_size]
                     batch_indices = batch_indices.reshape((self.nr_epochs * self.nr_minibatches, self.minibatch_size))
 
                     def ppo_minibatch_update(carry, minibatch_indices):
@@ -636,7 +641,7 @@ class NEAR_PPO:
         with open(f"{self.save_path}/tmp/config_algorithm.json", "w") as f:
             json.dump(self.config.algorithm.to_dict(), f)
         shutil.make_archive(f"{self.save_path}/{self.latest_model_file_name}", "zip", f"{self.save_path}/tmp")
-        # os.rename(f"{self.save_path}/{self.latest_model_file_name}.zip", f"{self.save_path}/{self.latest_model_file_name}")
+        os.rename(f"{self.save_path}/{self.latest_model_file_name}.zip", f"{self.save_path}/{self.latest_model_file_name}")
         shutil.rmtree(f"{self.save_path}/tmp")
 
         if self.track_wandb:

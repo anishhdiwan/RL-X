@@ -8,13 +8,13 @@ def prepare_expert_data(data_path, cutoff=1):
     expert_files = np.load(data_path)
 
     def _flatten_feature_array(x):
-        x = np.asarray(x)
+        x = np.asarray(x, dtype=np.float32)
         if x.ndim <= 2:
             return x
         return x.reshape(-1, x.shape[-1])
 
     def _flatten_scalar_array(x):
-        return np.asarray(x).reshape(-1)
+        return np.asarray(x, dtype=np.float32).reshape(-1)
 
     states = _flatten_feature_array(expert_files["states"])
     actions = _flatten_feature_array(expert_files["actions"])

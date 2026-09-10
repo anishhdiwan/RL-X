@@ -1,5 +1,6 @@
 # MuJoCo Benchmarks
-Contains [MuJoCo benchmark environments](https://gymnasium.farama.org/environments/mujoco/) Ant, Half Cheetah, Hopper, Walker2D, Humanoid, and Point Maze implemented using MuJoCo XLA for parallelization. 
+Contains the [MuJoCo benchmark environments](https://gymnasium.farama.org/environments/mujoco/) Ant, Half Cheetah, Hopper, Walker2D and Humanoid, implemented using MuJoCo XLA for parallelization.
+Also contains Point Maze, a custom goal-reaching task in the same style. It is not a port of the Gymnasium-Robotics environment of that name: it uses a flat observation, a fixed reset pose and its own dense and sparse reward variants.
 
 # Custom MuJoCo Environments
 

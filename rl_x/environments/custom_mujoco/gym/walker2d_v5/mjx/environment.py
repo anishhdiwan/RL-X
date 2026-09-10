@@ -46,11 +46,11 @@ class Walker2D:
         self.ctrl_cost_weight = 1e-3
         self.healthy_reward = 1.0
         self.reset_noise_scale = 5e-3
+        self.dt = self.mj_model.opt.timestep * self.nr_intermediate_steps
 
         self.viewer = None
         if render:
-            dt = self.mj_model.opt.timestep * self.nr_intermediate_steps
-            self.viewer = MujocoViewer(self.mj_model, dt)
+            self.viewer = MujocoViewer(self.mj_model, self.dt)
             c_model = deepcopy(self.mj_model)
             c_data = mujoco.MjData(c_model)
             mujoco.mj_step(c_model, c_data, 1)
@@ -129,6 +129,7 @@ class Walker2D:
 
     @partial(jax.jit, static_argnums=(0,))
     def _step(self, state, action):
+        x_position_before = state.data.qpos[0]
         data, _ = jax.lax.scan(
             f=lambda data, _: (mjx.step(self.mjx_model, data.replace(ctrl=action)), None),
             init=state.data,
@@ -139,7 +140,7 @@ class Walker2D:
         state.info_episode_store["episode_length"] += 1
 
         next_observation = self.get_observation(data)
-        reward, r_info = self.get_reward(data)
+        reward, r_info = self.get_reward(data, x_position_before)
         terminated = r_info["env_info/is_healthy"] < 0.5
         truncated = state.info_episode_store["episode_length"] >= self.horizon
         done = terminated | truncated
@@ -192,10 +193,10 @@ class Walker2D:
         ]))
         return observation
 
-    def get_reward(self, data):
+    def get_reward(self, data, x_position_before):
         torso_height = data.qpos[1]
         torso_pitch = data.qpos[2]
-        local_lin_vel = data.qvel[0]
+        local_lin_vel = (data.qpos[0] - x_position_before) / self.dt
 
         forward_reward = self.forward_reward_weight * local_lin_vel
 
@@ -206,12 +207,7 @@ class Walker2D:
             a_min=0.0,
             a_max=1.0,
         )
-        healthy_reward = jax.lax.cond(
-            self.terminate_when_unhealthy,
-            lambda _: self.healthy_reward,
-            lambda _: self.healthy_reward * is_healthy,
-            operand=None,
-        )
+        healthy_reward = self.healthy_reward * is_healthy
 
         ctrl_cost = self.ctrl_cost_weight * jnp.sum(jnp.square(data.ctrl))
         reward = jnp.nan_to_num(jnp.clip(forward_reward, max=1e4) + healthy_reward - ctrl_cost)

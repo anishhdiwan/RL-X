@@ -64,7 +64,6 @@ class AMP_PPO:
         self.os_shape = self.train_env.single_observation_space.shape
         self.as_shape = self.train_env.single_action_space.shape
         self.horizon = self.train_env.horizon
-        self.dim = np.prod(self.as_shape).item()
 
         # AMP Attributes
         self.data_path = config.algorithm.data_path
@@ -74,7 +73,10 @@ class AMP_PPO:
         self.handle_absorbing_states = config.algorithm.handle_absorbing_states
         self.gp_lambda = config.algorithm.gp_lambda
         self.gp_alpha = config.algorithm.gp_alpha
-        self.num_data_samples = np.load(self.data_path)["states"].shape[0]
+        self.num_data_samples = prepare_expert_data(self.data_path)["states"].shape[0]
+
+        if self.minibatch_size > self.batch_size:
+            raise ValueError("Minibatch size must not be larger than batch size")
 
         if self.evaluation_and_save_frequency % self.batch_size != 0:
             raise ValueError("Evaluation and save frequency must be a multiple of batch size")
@@ -98,7 +100,7 @@ class AMP_PPO:
 
         def linear_schedule_disc(count):
             fraction = 1.0 - (count // (self.nr_minibatches * self.nr_epochs_disc)) / ((self.nr_updates * self.nr_epochs) / self.nr_epochs_disc)
-            return self.learning_rate * fraction
+            return self.learning_rate_disc * fraction
 
         learning_rate = linear_schedule if self.anneal_learning_rate else self.learning_rate
         learning_rate_disc = linear_schedule_disc if self.anneal_learning_rate else self.learning_rate_disc
@@ -234,21 +236,17 @@ class AMP_PPO:
                     batch_actions = actions.reshape((-1,) + self.as_shape)
 
                     # Expert batch
-                    key, shuffle_key = jax.random.split(key)
-                    perm = jax.random.permutation(shuffle_key, expert_states.shape[0])
-                    expert_states = expert_states[perm]
-                    expert_actions = expert_actions[perm]
-                    batch_expert_states = expert_states[:self.batch_size]
-                    batch_expert_actions = expert_actions[:self.batch_size]
+                    key, expert_key = jax.random.split(key)
+                    expert_indices = jax.random.randint(expert_key, (self.batch_size,), 0, expert_states.shape[0])
+                    batch_expert_states = expert_states[expert_indices]
+                    batch_expert_actions = expert_actions[expert_indices]
                     expert_labels = jnp.ones((self.batch_size, 1), dtype=jnp.float32)
                     rollout_labels = jnp.zeros((self.batch_size, 1), dtype=jnp.float32)
 
                     batch_next_states = next_states.reshape((-1,) + self.os_shape)
                     batch_absorbing = terminations.reshape(-1)
-                    expert_next_states = expert_next_states[perm]
-                    expert_absorbing = expert_absorbing[perm]
-                    batch_expert_next_states = expert_next_states[:self.batch_size]
-                    batch_expert_absorbing = expert_absorbing[:self.batch_size]
+                    batch_expert_next_states = expert_next_states[expert_indices]
+                    batch_expert_absorbing = expert_absorbing[expert_indices]
 
                     vmap_amp_loss_fn = jax.vmap(amp_loss_fn, in_axes=(None, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0), out_axes=0)
                     safe_mean = lambda x: jnp.mean(x) if x is not None else x
@@ -258,6 +256,7 @@ class AMP_PPO:
                     key, subkey = jax.random.split(key)
                     batch_indices_disc = jnp.tile(jnp.arange(self.batch_size), (self.nr_epochs_disc, 1))
                     batch_indices_disc = jax.random.permutation(subkey, batch_indices_disc, axis=1, independent=True)
+                    batch_indices_disc = batch_indices_disc[:, :self.nr_minibatches * self.minibatch_size]
                     batch_indices_disc = batch_indices_disc.reshape((self.nr_epochs_disc * self.nr_minibatches, self.minibatch_size))
 
                     def amp_minibatch_update(carry, minibatch_indices_disc):
@@ -304,7 +303,7 @@ class AMP_PPO:
                                 next_states.reshape((-1,) + self.os_shape),
                                 terminations.flatten(),
                                 ),
-                                self.discriminator_state,
+                                discriminator_state,
                                 ).reshape(rewards.shape)
 
                     if self.handle_absorbing_states:
@@ -313,7 +312,7 @@ class AMP_PPO:
                                     next_states.reshape((-1,) + self.os_shape),
                                     jnp.ones_like(terminations.flatten()),
                                     ),
-                                    self.discriminator_state,
+                                    discriminator_state,
                                     ).reshape(rewards.shape)
                     else:
                         amp_reward_absorbing_state = jnp.asarray(0.0)
@@ -412,6 +411,7 @@ class AMP_PPO:
                     key, subkey = jax.random.split(key)
                     batch_indices = jnp.tile(jnp.arange(self.batch_size), (self.nr_epochs, 1))
                     batch_indices = jax.random.permutation(subkey, batch_indices, axis=1, independent=True)
+                    batch_indices = batch_indices[:, :self.nr_minibatches * self.minibatch_size]
                     batch_indices = batch_indices.reshape((self.nr_epochs * self.nr_minibatches, self.minibatch_size))
 
                     def ppo_minibatch_update(carry, minibatch_indices):
@@ -516,9 +516,9 @@ class AMP_PPO:
 
                 # Saving
                 if self.save_model:
-                    def save_with_check(policy_state, critic_state):
-                        self.save(policy_state, critic_state)
-                    jax.debug.callback(save_with_check, policy_state, critic_state)
+                    def save_with_check(policy_state, critic_state, discriminator_state):
+                        self.save(policy_state, critic_state, discriminator_state)
+                    jax.debug.callback(save_with_check, policy_state, critic_state, discriminator_state)
 
                 return (policy_state, critic_state, discriminator_state, (expert_states, expert_actions, expert_next_states, expert_absorbing), env_state, key), None
 
@@ -567,10 +567,11 @@ class AMP_PPO:
             rlx_logger.info("└" + "─" * 31 + "┴" + "─" * 16 + "┘")
 
 
-    def save(self, policy_state, critic_state):
+    def save(self, policy_state, critic_state, discriminator_state):
         checkpoint = {
             "policy": policy_state,
             "critic": critic_state,
+            "discriminator": discriminator_state,
         }
         save_args = orbax_utils.save_args_from_target(checkpoint)
         self.latest_model_checkpointer.save(f"{self.save_path}/tmp", checkpoint, save_args=save_args)
@@ -599,7 +600,8 @@ class AMP_PPO:
 
         target = {
             "policy": model.policy_state,
-            "critic": model.critic_state
+            "critic": model.critic_state,
+            "discriminator": model.discriminator_state,
         }
         restore_args = orbax_utils.restore_args_from_target(target)
         checkpointer = orbax.checkpoint.PyTreeCheckpointer()
@@ -607,6 +609,7 @@ class AMP_PPO:
 
         model.policy_state = checkpoint["policy"]
         model.critic_state = checkpoint["critic"]
+        model.discriminator_state = checkpoint["discriminator"]
 
         shutil.rmtree(checkpoint_dir)
 

@@ -41,11 +41,11 @@ class HalfCheetah:
         self.forward_reward_weight = 1.0
         self.ctrl_cost_weight = 0.1
         self.reset_noise_scale = 0.1
+        self.dt = self.mj_model.opt.timestep * self.nr_intermediate_steps
 
         self.viewer = None
         if render:
-            dt = self.mj_model.opt.timestep * self.nr_intermediate_steps
-            self.viewer = MujocoViewer(self.mj_model, dt)
+            self.viewer = MujocoViewer(self.mj_model, self.dt)
             c_model = deepcopy(self.mj_model)
             c_data = mujoco.MjData(c_model)
             mujoco.mj_step(c_model, c_data, 1)
@@ -123,6 +123,7 @@ class HalfCheetah:
 
     @partial(jax.jit, static_argnums=(0,))
     def _step(self, state, action):
+        x_position_before = state.data.qpos[0]
         data, _ = jax.lax.scan(
             f=lambda data, _: (mjx.step(self.mjx_model, data.replace(ctrl=action)), None),
             init=state.data,
@@ -133,7 +134,7 @@ class HalfCheetah:
         state.info_episode_store["episode_length"] += 1
 
         next_observation = self.get_observation(data)
-        reward, r_info = self.get_reward(data)
+        reward, r_info = self.get_reward(data, x_position_before)
         terminated = False
         truncated = state.info_episode_store["episode_length"] >= self.horizon
         done = terminated | truncated
@@ -174,8 +175,8 @@ class HalfCheetah:
         ]))
         return observation
 
-    def get_reward(self, data):
-        local_lin_vel = data.qvel[0]
+    def get_reward(self, data, x_position_before):
+        local_lin_vel = (data.qpos[0] - x_position_before) / self.dt
         forward_reward = self.forward_reward_weight * local_lin_vel
         ctrl_cost = self.ctrl_cost_weight * jnp.sum(jnp.square(data.ctrl))
         reward = jnp.nan_to_num(jnp.clip(forward_reward, max=1e4) - ctrl_cost)

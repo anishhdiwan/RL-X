@@ -85,15 +85,12 @@ class TRIRL_DTRL:
         self.beta = 1/config.algorithm.entropy_coef
         self.num_data_samples = prepare_expert_data(self.data_path)["states"].shape[0]
 
-        chunk_size_dict = {10:30, 20:14, 50:8, 100:4} # dict mapping nr_steps to chunk size
         self.on_demand_etas = config.algorithm.on_demand_etas
         if self.on_demand_etas:
-            chunk_size_dict = {k: int(v/2 - 1) for k, v in chunk_size_dict.items()}
-            chunk_size_dict[10] = 20
             self.maximum_eta = False # always use per state eta if computing etas on demand
         else:
             self.maximum_eta = True
-        self.chunk_size = 10
+        self.chunk_size = config.algorithm.chunk_size
         self.reward_fn_approximator = config.algorithm.reward_fn_approximator
         self.nr_epochs_rew = config.algorithm.nr_epochs_rew
         self.learning_rate_reward_fn = config.algorithm.learning_rate_reward_fn
@@ -866,6 +863,7 @@ class TRIRL_DTRL:
 
         return model
 
+
     def test(self, episodes):
         rlx_logger.info("Testing runs infinitely. The episodes parameter is ignored.")
 
@@ -886,6 +884,7 @@ class TRIRL_DTRL:
             env_state, self.key = rollout(env_state, self.key)
             if self.render:
                 env_state = self.train_env.render(env_state)
+
 
     def general_properties():
         return GeneralProperties

@@ -10,6 +10,7 @@ from rl_x.environments.custom_mujoco.gym.humanoid_v5.mjx.state import State
 from rl_x.environments.custom_mujoco.gym.humanoid_v5.mjx.box_space import BoxSpace
 from rl_x.environments.custom_mujoco.gym.humanoid_v5.mjx.viewer import MujocoViewer
 
+
 class Humanoid:
     def __init__(self, render, horizon=1000):
         self.horizon = horizon
@@ -176,7 +177,6 @@ class Humanoid:
         return state
 
 
-
     def get_observation(self, data):
         position = data.qpos[2:] # exclude x and y coordinates of the torso
         velocity = data.qvel[:]
@@ -217,7 +217,7 @@ class Humanoid:
 
         ctrl_cost = self.ctrl_cost_weight * jnp.sum(jnp.square(data.ctrl))
         
-        contact_forces = data.cfrc_ext
+        contact_forces = data._impl.cfrc_ext
         contact_cost = self.contact_cost_weight * jnp.sum(jnp.square(contact_forces))
         min_cost, max_cost = self.contact_cost_range
         contact_cost = jnp.clip(contact_cost, min=min_cost, max=max_cost)
@@ -233,7 +233,8 @@ class Humanoid:
         }
 
         return reward, info
-    
+
+
     def close(self):
         if self.viewer:
             self.viewer.close()

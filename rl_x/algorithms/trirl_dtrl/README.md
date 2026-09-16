@@ -20,6 +20,7 @@ git clone https://huggingface.co/datasets/anishdiwan/trirl_dataset
 - This implements the max-eta version of TRIRL.
 - Based on the PPO-Clip version: Clipping the ratio of the new and old policy
 - The hyperparameters and network architecture for the ```flax_full_jit``` version are tuned for strong performance on many parallel environments for mujoco benchmark environments
+- The reward correction evaluates the discriminator buffer in chunks, so that only ```chunk_size``` discriminators are held on the device at a time. The default of 10 is chosen to fit on a small GPU. It is purely a memory-for-speed trade-off and does not change the computed reward, so on a GPU with more memory a larger ```chunk_size``` can be used to run the correction in fewer passes.
 
 **Supported frameworks**
 - JAX (Flax)

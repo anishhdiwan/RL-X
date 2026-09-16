@@ -82,7 +82,7 @@ class TRIRL_PPO:
         self.init_eta = config.algorithm.init_eta
         self.const_eta = config.algorithm.const_eta
         self.maximum_eta = True
-        self.chunk_size = 10 # number of discriminators in a chunk (can be changed based on available VRAM)
+        self.chunk_size = config.algorithm.chunk_size
         self.reward_fn_approximator = config.algorithm.reward_fn_approximator
         self.nr_epochs_rew = config.algorithm.nr_epochs_rew
         self.learning_rate_reward_fn = config.algorithm.learning_rate_reward_fn
@@ -813,6 +813,7 @@ class TRIRL_PPO:
             env_state, self.key = rollout(env_state, self.key)
             if self.render:
                 env_state = self.train_env.render(env_state)
+
 
     def general_properties():
         return GeneralProperties

@@ -52,6 +52,7 @@ class PointMaze:
             self.light_xpos = c_data.light_xpos
             del c_model, c_data
 
+
     def render(self, state):
         env_id = 0
         data = mjx.get_data(self.mj_model, state.data)[env_id]
@@ -61,6 +62,7 @@ class PointMaze:
 
         self.viewer.render(data)
         return state
+
 
     @partial(jax.vmap, in_axes=(None, 0, None))
     @partial(jax.jit, static_argnums=(0, 2))
@@ -87,6 +89,7 @@ class PointMaze:
 
         state = State(data, next_observation, next_observation, reward, terminated, truncated, info, info_episode_store, key)
         return self._reset(state)
+
 
     @partial(jax.jit, static_argnums=(0,))
     def _reset(self, state):
@@ -122,10 +125,12 @@ class PointMaze:
             info_episode_store=info_episode_store,
         )
 
+
     @partial(jax.vmap, in_axes=(None, 0, 0))
     @partial(jax.jit, static_argnums=(0,))
     def step(self, state, action):
         return self._step(state, action)
+
 
     @partial(jax.jit, static_argnums=(0,))
     def _step(self, state, action):
@@ -171,8 +176,10 @@ class PointMaze:
 
         return jax.lax.cond(done, when_done, when_not_done, None)
 
+
     def get_target_position(self, data):
         return data.xpos[self.target_body_id][:2]
+
 
     def get_observation(self, data):
         particle_pos = data.xpos[self.particle_body_id][:2]
@@ -180,6 +187,7 @@ class PointMaze:
         observation = jnp.concatenate([particle_pos, target_pos])
         observation = jnp.nan_to_num(observation, nan=0.0, posinf=0.0, neginf=0.0)
         return observation
+
 
     def get_reward(self, data, action):
         particle_pos = data.xpos[self.particle_body_id][:2]
@@ -205,6 +213,7 @@ class PointMaze:
             "env_info/reward_ctrl": reward_ctrl,
         }
         return reward, info
+
 
     def close(self):
         if self.viewer:

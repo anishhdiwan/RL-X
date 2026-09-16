@@ -33,6 +33,7 @@ class ParamsBuffer:
             size=size
         )
 
+
     @classmethod
     def add(cls, params_buffer, params):
         index = params_buffer.n
@@ -55,10 +56,12 @@ class ParamsBuffer:
             n=jnp.minimum(index + 1, size),
         )
 
+
     @classmethod
     def sample(cls, params_buffer):
         level = jnp.minimum(params_buffer.n, params_buffer.size)
         return params_buffer.params, level
+
 
     @classmethod
     def sample_oldest(cls, params_buffer, k=1):
@@ -90,6 +93,7 @@ class EtasBuffer:
             "size": serialized_size,
         }
 
+
     @classmethod
     def create(cls, etas, size):
         return EtasBuffer(
@@ -97,6 +101,7 @@ class EtasBuffer:
             n=jnp.asarray(0, dtype=jnp.int32),
             size=size
         )
+
 
     @classmethod
     def add(cls, etas_buffer, etas):
@@ -119,6 +124,7 @@ class EtasBuffer:
             etas=etas_updated,
             n=jnp.minimum(index + 1, size),
         )
+
 
     @classmethod
     def sample(cls, etas_buffer):

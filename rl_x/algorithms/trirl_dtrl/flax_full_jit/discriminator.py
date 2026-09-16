@@ -40,7 +40,6 @@ class Discriminator(nn.Module):
         return discriminator
 
 
-
 def get_reward_approximator(config, env):
     action_space_type = env.general_properties.action_space_type
     observation_space_type = env.general_properties.observation_space_type
@@ -50,7 +49,6 @@ def get_reward_approximator(config, env):
 
 
 class RewardApproximator(nn.Module):
-
     @nn.compact
     def __call__(self, x, y, xn, shaping=None):
         """

@@ -53,6 +53,7 @@ class HalfCheetah:
             self.light_xpos = c_data.light_xpos
             del c_model, c_data
 
+
     def render(self, state):
         env_id = 0
         data = mjx.get_data(self.mj_model, state.data)[env_id]
@@ -62,6 +63,7 @@ class HalfCheetah:
 
         self.viewer.render(data)
         return state
+
 
     @partial(jax.vmap, in_axes=(None, 0, None))
     @partial(jax.jit, static_argnums=(0, 2))
@@ -85,6 +87,7 @@ class HalfCheetah:
 
         state = State(data, next_observation, next_observation, reward, terminated, truncated, info, info_episode_store, key)
         return self._reset(state)
+
 
     @partial(jax.jit, static_argnums=(0,))
     def _reset(self, state):
@@ -116,10 +119,12 @@ class HalfCheetah:
             key=key,
         )
 
+
     @partial(jax.vmap, in_axes=(None, 0, 0))
     @partial(jax.jit, static_argnums=(0,))
     def step(self, state, action):
         return self._step(state, action)
+
 
     @partial(jax.jit, static_argnums=(0,))
     def _step(self, state, action):
@@ -166,6 +171,7 @@ class HalfCheetah:
 
         return jax.lax.cond(done, when_done, when_not_done, None)
 
+
     def get_observation(self, data):
         position = data.qpos[1:]
         velocity = data.qvel[:]
@@ -174,6 +180,7 @@ class HalfCheetah:
             velocity,
         ]))
         return observation
+
 
     def get_reward(self, data, x_position_before):
         local_lin_vel = (data.qpos[0] - x_position_before) / self.dt
@@ -186,6 +193,7 @@ class HalfCheetah:
             "env_info/ctrl_cost": ctrl_cost,
         }
         return reward, info
+
 
     def close(self):
         if self.viewer:

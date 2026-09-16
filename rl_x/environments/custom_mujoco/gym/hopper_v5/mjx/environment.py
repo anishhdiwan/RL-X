@@ -59,6 +59,7 @@ class Hopper:
             self.light_xpos = c_data.light_xpos
             del c_model, c_data
 
+
     def render(self, state):
         env_id = 0
         data = mjx.get_data(self.mj_model, state.data)[env_id]
@@ -68,6 +69,7 @@ class Hopper:
 
         self.viewer.render(data)
         return state
+
 
     @partial(jax.vmap, in_axes=(None, 0, None))
     @partial(jax.jit, static_argnums=(0, 2))
@@ -92,6 +94,7 @@ class Hopper:
 
         state = State(data, next_observation, next_observation, reward, terminated, truncated, info, info_episode_store, key)
         return self._reset(state)
+
 
     @partial(jax.jit, static_argnums=(0,))
     def _reset(self, state):
@@ -123,10 +126,12 @@ class Hopper:
             key=key,
         )
 
+
     @partial(jax.vmap, in_axes=(None, 0, 0))
     @partial(jax.jit, static_argnums=(0,))
     def step(self, state, action):
         return self._step(state, action)
+
 
     @partial(jax.jit, static_argnums=(0,))
     def _step(self, state, action):
@@ -173,6 +178,7 @@ class Hopper:
 
         return jax.lax.cond(done, when_done, when_not_done, None)
 
+
     def get_observation(self, data):
         position = data.qpos[1:].flatten()
         velocity = jnp.clip(data.qvel[:].flatten(), -10, 10)
@@ -181,6 +187,7 @@ class Hopper:
             velocity,
         ]))
         return observation
+
 
     def get_reward(self, data, x_position_before):
         torso_height = data.qpos[1]
@@ -196,8 +203,8 @@ class Hopper:
         healthy_state = jnp.all((state > min_state) & (state < max_state))
         is_healthy = jnp.clip(
             jnp.nan_to_num((healthy_state & (torso_height > min_z) & (torso_height < max_z) & (torso_pitch > min_angle) & (torso_pitch < max_angle)).astype("float32")),
-            a_min=0.0,
-            a_max=1.0,
+            min=0.0,
+            max=1.0,
         )
         healthy_reward = self.healthy_reward * is_healthy
 
@@ -210,6 +217,7 @@ class Hopper:
             "env_info/ctrl_cost": ctrl_cost,
         }
         return reward, info
+
 
     def close(self):
         if self.viewer:

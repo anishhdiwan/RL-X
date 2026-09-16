@@ -27,6 +27,7 @@ class DiscriminatorShaped(nn.Module):
         self.hnet_dense2 = nn.Dense(256, kernel_init=orthogonal(np.sqrt(2)), bias_init=constant(0.0))
         self.hnet_dense3 = nn.Dense(1, kernel_init=orthogonal(0.1), bias_init=constant(0.0))
 
+
     def __call__(self, x, a, x_n, absorbing, logp, shaping=1.0):
         """
         D(s) + gamma h(s') - h(s)

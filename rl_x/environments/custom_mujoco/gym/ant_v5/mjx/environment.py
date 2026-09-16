@@ -63,6 +63,7 @@ class Ant:
             self.light_xpos = c_data.light_xpos
             del c_model, c_data
 
+
     def render(self, state):
         env_id = 0
         data = mjx.get_data(self.mj_model, state.data)[env_id]
@@ -72,6 +73,7 @@ class Ant:
 
         self.viewer.render(data)
         return state
+
 
     @partial(jax.vmap, in_axes=(None, 0, None))
     @partial(jax.jit, static_argnums=(0, 2))
@@ -98,6 +100,7 @@ class Ant:
 
         state = State(data, next_observation, next_observation, reward, terminated, truncated, info, info_episode_store, key)
         return self._reset(state)
+
 
     @partial(jax.jit, static_argnums=(0,))
     def _reset(self, state):
@@ -129,10 +132,12 @@ class Ant:
             key=key,
         )
 
+
     @partial(jax.vmap, in_axes=(None, 0, 0))
     @partial(jax.jit, static_argnums=(0,))
     def step(self, state, action):
         return self._step(state, action)
+
 
     @partial(jax.jit, static_argnums=(0,))
     def _step(self, state, action):
@@ -179,10 +184,11 @@ class Ant:
 
         return jax.lax.cond(done, when_done, when_not_done, None)
 
+
     def get_observation(self, data):
         position = data.qpos[2:]
         velocity = data.qvel[:]
-        raw_contact_forces = data.cfrc_ext
+        raw_contact_forces = data._impl.cfrc_ext
         min_value, max_value = self.contact_force_range
         contact_forces = jnp.clip(raw_contact_forces, min_value, max_value)
         contact_force = contact_forces[1:].flatten()
@@ -193,6 +199,7 @@ class Ant:
             contact_force,
         ]))
         return observation
+
 
     def get_reward(self, data, xy_position_before):
         torso_height = data.qpos[2]
@@ -206,14 +213,14 @@ class Ant:
         state = jnp.concatenate([data.qpos, data.qvel])
         is_healthy = jnp.clip(
             jnp.nan_to_num((jnp.all(jnp.isfinite(state)) & (torso_height >= min_z) & (torso_height <= max_z)).astype("float32")),
-            a_min=0.0,
-            a_max=1.0,
+            min=0.0,
+            max=1.0,
         )
         healthy_reward = self.healthy_reward * is_healthy
 
         ctrl_cost = self.ctrl_cost_weight * jnp.sum(jnp.square(data.ctrl))
 
-        raw_contact_forces = data.cfrc_ext
+        raw_contact_forces = data._impl.cfrc_ext
         min_value, max_value = self.contact_force_range
         contact_forces = jnp.clip(raw_contact_forces, min_value, max_value)
         contact_cost = self.contact_cost_weight * jnp.sum(jnp.square(contact_forces))
@@ -228,6 +235,7 @@ class Ant:
             "env_info/contact_cost": contact_cost,
         }
         return reward, info
+
 
     def close(self):
         if self.viewer:

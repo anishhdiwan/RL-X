@@ -79,6 +79,7 @@ A framework for Reinforcement Learning research.
 
 
 #### Imitation Learning & Inverse RL
+
 - [Generative Adversarial Imitation Learning (GAIL)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/gail_ppo)
 - [Adversarial Inverse Reinforcement Learning (AIRL)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/airl_ppo)
 - [Adversarial Motion Priors (AMP)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/amp_ppo)

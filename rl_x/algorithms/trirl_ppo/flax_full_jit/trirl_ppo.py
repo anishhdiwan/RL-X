@@ -117,7 +117,7 @@ class TRIRL_PPO:
             return self.learning_rate * fraction
 
         def linear_schedule_disc(count):
-            fraction = 1.0 - (count // (self.nr_minibatches * self.nr_epochs_disc)) / ((self.nr_updates * self.nr_epochs) / self.nr_epochs_disc)
+            fraction = 1.0 - (count // (self.nr_minibatches * self.nr_epochs_disc)) / self.nr_updates
             return self.learning_rate_disc * fraction
 
         learning_rate = linear_schedule if self.anneal_learning_rate else self.learning_rate
@@ -441,8 +441,11 @@ class TRIRL_PPO:
                         corr_reward_absorbing_state = corr_reward_absorbing_state.reshape(rewards.shape)
                     else:
                         reward_approximator_optimization_metrics = {}
-                        
-                    
+
+                    corr_reward = self.env_reward_frac * rewards + (1 - self.env_reward_frac) * corr_reward
+                    corr_reward_absorbing_state = (1 - self.env_reward_frac) * corr_reward_absorbing_state # the environment pays no reward in the absorbing state
+
+
                     """ PPO + KL Penalty """
                     # Calculating advantages and returns
                     def calculate_gae_advantages(critic_state, next_states, rewards, values, terminations):

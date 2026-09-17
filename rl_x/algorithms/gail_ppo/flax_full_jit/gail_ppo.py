@@ -99,7 +99,7 @@ class GAIL_PPO:
             return self.learning_rate * fraction
 
         def linear_schedule_disc(count):
-            fraction = 1.0 - (count // (self.nr_minibatches * self.nr_epochs_disc)) / ((self.nr_updates * self.nr_epochs) / self.nr_epochs_disc)
+            fraction = 1.0 - (count // (self.nr_minibatches * self.nr_epochs_disc)) / self.nr_updates
             return self.learning_rate_disc * fraction
 
         learning_rate = linear_schedule if self.anneal_learning_rate else self.learning_rate
@@ -316,8 +316,11 @@ class GAIL_PPO:
                                     ).reshape(rewards.shape)
                     else:
                         gail_reward_absorbing_state = jnp.asarray(0.0)
-                    
-                    
+
+                    gail_reward = self.env_reward_frac * rewards + (1 - self.env_reward_frac) * gail_reward
+                    gail_reward_absorbing_state = (1 - self.env_reward_frac) * gail_reward_absorbing_state # the environment pays no reward in the absorbing state
+
+
                     """ PPO """
                     # Calculating advantages and returns
                     def calculate_gae_advantages(critic_state, next_states, rewards, values, terminations):

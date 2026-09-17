@@ -73,6 +73,7 @@ class AMP_PPO:
         self.handle_absorbing_states = config.algorithm.handle_absorbing_states
         self.gp_lambda = config.algorithm.gp_lambda
         self.gp_alpha = config.algorithm.gp_alpha
+        self.reward_type = config.algorithm.reward_type
         self.num_data_samples = prepare_expert_data(self.data_path)["states"].shape[0]
 
         if self.minibatch_size > self.batch_size:
@@ -92,14 +93,14 @@ class AMP_PPO:
 
         self.policy, self.get_processed_action = get_policy(self.config, self.train_env)
         self.critic = get_critic(self.config, self.train_env)
-        self.discriminator = get_discriminator(config, self.train_env)
+        self.discriminator = get_discriminator(config, self.train_env, reward_type=self.reward_type)
 
         def linear_schedule(count):
             fraction = 1.0 - (count // (self.nr_minibatches * self.nr_epochs)) / self.nr_updates
             return self.learning_rate * fraction
 
         def linear_schedule_disc(count):
-            fraction = 1.0 - (count // (self.nr_minibatches * self.nr_epochs_disc)) / ((self.nr_updates * self.nr_epochs) / self.nr_epochs_disc)
+            fraction = 1.0 - (count // (self.nr_minibatches * self.nr_epochs_disc)) / self.nr_updates
             return self.learning_rate_disc * fraction
 
         learning_rate = linear_schedule if self.anneal_learning_rate else self.learning_rate
@@ -220,7 +221,10 @@ class AMP_PPO:
                         interpolated_next_state = alpha * expert_next_state + (1 - alpha) * next_state
                         interpolated_abs = 0.0 * expert_absorbing # assume interpolated state to be non-absorbing                
                         grad_state, grad_action, grad_next_state = jax.grad(lambda s, a, sn, ab: jnp.sum(self.discriminator.apply(discriminator_params, s, a, sn, ab)), argnums=(0, 1, 2))(interpolated_state, interpolated_action, interpolated_next_state, interpolated_abs)
-                        grad_norm = jnp.sqrt(jnp.sum(jnp.square(grad_state)) + jnp.sum(jnp.square(grad_action)))
+                        if self.reward_type == "state-action":
+                            grad_norm = jnp.sqrt(jnp.sum(jnp.square(grad_state)) + jnp.sum(jnp.square(grad_action)))
+                        elif self.reward_type == "state-based":
+                            grad_norm = jnp.sqrt(jnp.sum(jnp.square(grad_state)) + jnp.sum(jnp.square(grad_next_state)))
                         gp = (grad_norm - 1.0) ** 2
 
                         mse_loss = mse_agent + mse_expert + gp_lambda * gp
@@ -241,7 +245,7 @@ class AMP_PPO:
                     batch_expert_states = expert_states[expert_indices]
                     batch_expert_actions = expert_actions[expert_indices]
                     expert_labels = jnp.ones((self.batch_size, 1), dtype=jnp.float32)
-                    rollout_labels = jnp.zeros((self.batch_size, 1), dtype=jnp.float32)
+                    rollout_labels = -jnp.ones((self.batch_size, 1), dtype=jnp.float32)
 
                     batch_next_states = next_states.reshape((-1,) + self.os_shape)
                     batch_absorbing = terminations.reshape(-1)
@@ -316,8 +320,11 @@ class AMP_PPO:
                                     ).reshape(rewards.shape)
                     else:
                         amp_reward_absorbing_state = jnp.asarray(0.0)
-                    
-                    
+
+                    amp_reward = self.env_reward_frac * rewards + (1 - self.env_reward_frac) * amp_reward
+                    amp_reward_absorbing_state = (1 - self.env_reward_frac) * amp_reward_absorbing_state # the environment pays no reward in the absorbing state
+
+
                     """ PPO """
                     # Calculating advantages and returns
                     def calculate_gae_advantages(critic_state, next_states, rewards, values, terminations):

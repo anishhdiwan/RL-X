@@ -99,7 +99,7 @@ class AIRL_PPO:
             return self.learning_rate * fraction
 
         def linear_schedule_disc(count):
-            fraction = 1.0 - (count // (self.nr_minibatches * self.nr_epochs_disc)) / ((self.nr_updates * self.nr_epochs) / self.nr_epochs_disc)
+            fraction = 1.0 - (count // (self.nr_minibatches * self.nr_epochs_disc)) / self.nr_updates
             return self.learning_rate_disc * fraction
 
         learning_rate = linear_schedule if self.anneal_learning_rate else self.learning_rate
@@ -110,8 +110,6 @@ class AIRL_PPO:
         action = jnp.array([self.train_env.single_action_space.sample(sampling_key)])
         log_prob = jnp.zeros_like(env_state.terminated, dtype=jnp.float32)
         self.H_terminal = jnp.sum(jnp.log(self.train_env.single_action_space.high - self.train_env.single_action_space.low))
-        self.as_high = self.train_env.single_action_space.high[0]
-        self.as_low = self.train_env.single_action_space.low[0]
 
         self.policy_state = TrainState.create(
             apply_fn=self.policy.apply,
@@ -325,7 +323,7 @@ class AIRL_PPO:
                                 ).reshape(rewards.shape)
 
                     if self.handle_absorbing_states:
-                        next_log_probs = (1/(self.as_high - self.as_low)) * jnp.ones_like(log_probs)
+                        next_log_probs = -self.H_terminal * jnp.ones_like(log_probs)
                         airl_reward_absorbing_state = get_reward((next_states.reshape((-1,) + self.os_shape),
                                     actions.reshape((-1,) + self.as_shape),
                                     next_states.reshape((-1,) + self.os_shape),
@@ -336,8 +334,11 @@ class AIRL_PPO:
                                     ).reshape(rewards.shape)
                     else:
                         airl_reward_absorbing_state = jnp.asarray(0.0)
-                    
-                    
+
+                    airl_reward = self.env_reward_frac * rewards + (1 - self.env_reward_frac) * airl_reward
+                    airl_reward_absorbing_state = (1 - self.env_reward_frac) * airl_reward_absorbing_state # the environment pays no reward in the absorbing state
+
+
                     """ PPO """
 
                     # Calculating advantages and returns

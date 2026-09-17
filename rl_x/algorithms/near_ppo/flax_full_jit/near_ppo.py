@@ -375,8 +375,10 @@ class NEAR_PPO:
                         energy_reward = jnp.squeeze(jax.lax.stop_gradient(self.energyfn.apply(energyfn_state.params, samples, sigmas[self.sigma_inference_ncsn]))).reshape(rewards.shape)
 
 
-                    energy_reward_absorbing_state = jnp.asarray(0.0)                        
-                    
+                    energy_reward_absorbing_state = jnp.asarray(0.0)
+
+                    energy_reward = self.env_reward_frac * rewards + (1 - self.env_reward_frac) * energy_reward
+
                     """ PPO """
 
                     # Calculating advantages and returns

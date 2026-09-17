@@ -32,5 +32,6 @@ def get_config(algorithm_name):
     config.gp_lambda = 0.05
     config.gp_alpha = 0.5
     config.handle_absorbing_states = True
+    config.reward_type = "state-action" # options: state-action, state-based
 
     return config

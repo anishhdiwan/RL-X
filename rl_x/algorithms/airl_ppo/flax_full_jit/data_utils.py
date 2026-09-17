@@ -26,13 +26,6 @@ def prepare_expert_data(data_path, cutoff=1):
     dataset["next_states"] = _flatten_feature_array(expert_files["next_states"])[:cutoff]
     dataset["absorbing"] = _flatten_scalar_array(expert_files["absorbing"])[:cutoff]
 
-    if "rewards" in expert_files:
-        dataset["rewards"] = _flatten_scalar_array(expert_files["rewards"])[:cutoff]
-    elif "episode_returns" in expert_files:
-        dataset["rewards"] = _flatten_scalar_array(expert_files["episode_returns"])[:cutoff]
-    else:
-        raise KeyError("The dataset has neither an episode nor a step-based reward!")
-
     return dataset
 
 
@@ -54,10 +47,6 @@ def expert_data_spec(num_samples, state_dim, action_dim):
             dtype=jnp.float32,
         ),
         "absorbing": jax.ShapeDtypeStruct(
-            shape=(num_samples,),
-            dtype=jnp.float32,
-        ),
-        "rewards": jax.ShapeDtypeStruct(
             shape=(num_samples,),
             dtype=jnp.float32,
         ),

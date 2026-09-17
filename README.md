@@ -1,7 +1,16 @@
-<img src="docs/assets/images/logo.png" align="right" width="25%"/>
+<img src="docs/assets/images/logo_no_background.png" align="right" width="25%"/>
 
 
-# RL-X
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/images/readme_title_dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="docs/assets/images/readme_title_light.svg">
+  <img src="docs/assets/images/readme_title_light.svg" alt="RL-X" height="52">
+</picture><br>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/images/readme_separator_2px_native_dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="docs/assets/images/readme_separator_2px_native_light.svg">
+  <img src="docs/assets/images/readme_separator_2px_native_light.svg" alt="" width="72%" height="2" align="top">
+</picture>
 
 A framework for Reinforcement Learning research.
 
@@ -15,13 +24,12 @@ A framework for Reinforcement Learning research.
 - 💡 **Perfect to understand and prototype algorithms**:
     - One algorithm = One directory -> No backtracking through  parent classes
     - Algorithms can be easily copied out of RL-X
-- ⚒️ **Known DL libraries**: Implementations in PyTorch and mainly JAX
+- ⚒️ **Known DL libraries**: Implementations in PyTorch and JAX
 - ⚡ **Maximum speed**: Just-In-Time (JIT) compilation and parallel environments
 - 🧪 **Mix and match and extend**: Generic interfaces between algorithms and environments
 - ⛰️​ **Custom environments**: Examples for MuJoCo, Isaac Lab, ManiSkill or custom socket communication
 - 🚀​ **GPU environments**: MJX, Warp, Isaac Lab and ManiSkill can run thousands of parallel environments
-- ​🦾 **MuJoCo Benchmarks**: Ant, Half Cheetah, Hopper, Walker2D, Humanoid, and Point Maze environments
-- 🤖​ **Robot learning**: Training and deployment for the Unitree Go2 (quadruped) and G1 (humanoid) robots
+- 🤖​ **Robot learning**: Training and deployment for locomotion and motion tracking with the G1 and Go2
 - ⚽ **RoboCup**: Training for the RoboCup soccer competition in MuJoCo and MJX
 - 🕰️ **Memory architectures**: PPO with GRU, LSTM, Transformer, History Window, Mamba-2, Memory Actions
 - 📈 **Experiments**: Checkpoints, Evaluation, Console log, Tensorboard, Weights & Biases, SLURM, Docker
@@ -30,40 +38,57 @@ A framework for Reinforcement Learning research.
 ### Implemented Algorithms
 
 #### Reinforcement Learning
-- [Proximal Policy Optimization (PPO)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/ppo) in PyTorch, Flax
-- [Proximal Policy Optimization + Differentiable Trust Region Layers (PPO+DTRL)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/ppo_dtrl) in Flax
-- [Proximal Policy Optimization + Gated Recurrent Unit (PPO+GRU)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/ppo_gru) in Flax
-- [Proximal Policy Optimization + Long Short-Term Memory (PPO+LSTM)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/ppo_lstm) in Flax
-- [Proximal Policy Optimization + Transformer (PPO+Transformer)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/ppo_transformer) in Flax
-- [Proximal Policy Optimization + History Window (PPO+HistoryWindow)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/ppo_history_window) in Flax
-- [Proximal Policy Optimization + Mamba-2 (PPO+Mamba-2)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/ppo_mamba2) in Flax
-- [Proximal Policy Optimization + Memory Actions (PPO+MemoryActions)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/ppo_memory_actions) in Flax
-- [Early Stopping Policy Optimization (ESPO)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/espo) in PyTorch, Flax
-- [Deep Deterministic Policy Gradient (DDPG)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/ddpg) in Flax
-- [Twin Delayed Deep Deterministic Gradient (TD3)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/td3) in Flax
-- [Fast Twin Delayed Deep Deterministic Gradient (FastTD3)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/fasttd3) in PyTorch, Flax
-- [Soft Actor Critic (SAC)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/sac) in PyTorch, Flax
-- [Fast Soft Actor Critic (FastSAC)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/fastsac) in PyTorch, Flax
-- [Randomized Ensembled Double Q-Learning (REDQ)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/redq) in Flax
-- [Dropout Q-Functions (DroQ)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/droq) in Flax
-- [CrossQ](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/crossq) in Flax
-- [Truncated Quantile Critics (TQC)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/tqc) in Flax
-- [Aggressive Q-Learning with Ensembles (AQE)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/aqe) in Flax
-- [Maximum a Posteriori Policy Optimization (MPO)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/mpo) in PyTorch, Flax
-- [Fast Maximum a Posteriori Policy Optimization (FastMPO)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/fastmpo) in Flax
-- [Deep Q-Network (DQN)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/dqn) in Flax
-- [Deep Q-Network with Histogram Loss using Gaussians (DQN HL-Gauss)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/dqn_hl_gauss) in Flax
-- [Double Deep Q-Network (DDQN)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/ddqn) in Flax
-- [Categorical Deep Q-Network (C51)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/c51) in Flax
-- [Parallelized Q-Network (PQN)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/pqn) in Flax
+
+- [Proximal Policy Optimization (PPO)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/ppo)
+- [Proximal Policy Optimization + Differentiable Trust Region Layers (PPO+DTRL)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/ppo_dtrl)
+- [Proximal Policy Optimization + Gated Recurrent Unit (PPO+GRU)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/ppo_gru)
+- [Proximal Policy Optimization + Long Short-Term Memory (PPO+LSTM)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/ppo_lstm)
+- [Proximal Policy Optimization + Transformer (PPO+Transformer)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/ppo_transformer)
+- [Proximal Policy Optimization + History Window (PPO+HistoryWindow)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/ppo_history_window)
+- [Proximal Policy Optimization + Mamba-2 (PPO+Mamba-2)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/ppo_mamba2)
+- [Proximal Policy Optimization + Memory Actions (PPO+MemoryActions)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/ppo_memory_actions)
+- [Early Stopping Policy Optimization (ESPO)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/espo)
+- [Trust Region Policy Optimization (TRPO)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/trpo)
+- [Simple Policy Optimization (SPO)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/spo)
+- [Flow Policy Optimization (FPO)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/fpo)
+- [Diffusion Policy Policy Optimization (DPPO)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/dppo)
+- [Diffusion Models for Maximum Entropy Reinforcement Learning (DIME)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/dime)
+- [Relative Entropy Pathwise Policy Optimization (REPPO)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/reppo)
+- [Deep Deterministic Policy Gradient (DDPG)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/ddpg)
+- [Twin Delayed Deep Deterministic Gradient (TD3)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/td3)
+- [Fast Twin Delayed Deep Deterministic Gradient (FastTD3)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/fasttd3)
+- [Soft Actor Critic (SAC)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/sac)
+- [Fast Soft Actor Critic (FastSAC)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/fastsac)
+- [Flash Soft Actor Critic (FlashSAC)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/flashsac)
+- [Randomized Ensembled Double Q-Learning (REDQ)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/redq)
+- [Dropout Q-Functions (DroQ)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/droq)
+- [Bigger, Regularized, Optimistic (BRO)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/bro)
+- [CrossQ](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/crossq)
+- [XQC](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/xqc)
+- [Simplicity Bias (SimBa)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/simba)
+- [Simplicity Bias V2 (SimBaV2)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/simbav2)
+- [Truncated Quantile Critics (TQC)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/tqc)
+- [Aggressive Q-Learning with Ensembles (AQE)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/aqe)
+- [Maximum a Posteriori Policy Optimization (MPO)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/mpo)
+- [Fast Maximum a Posteriori Policy Optimization (FastMPO)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/fastmpo)
+- [Deep Q-Network (DQN)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/dqn)
+- [Deep Q-Network with Histogram Loss using Gaussians (DQN HL-Gauss)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/dqn_hl_gauss)
+- [Double Deep Q-Network (DDQN)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/ddqn)
+- [Categorical Deep Q-Network (C51)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/c51)
+- [Parallelized Q-Network (PQN)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/pqn)
+
 
 #### Imitation Learning & Inverse RL
-- [Generative Adversarial Imitation Learning (GAIL)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/gail_ppo) in Flax
-- [Adversarial Inverse Reinforcement Learning (AIRL)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/airl_ppo) in Flax
-- [Adversarial Motion Priors (AMP)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/amp_ppo) in Flax
-- [Noise Conditioned Energy Based Annealed Rewards (NEAR)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/near_ppo) in Flax
-- [Trust Region Inverse Reinforcement Learning + Trust Region Loss (TRIRL+PPO)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/trirl_ppo) in Flax
-- [Trust Region Inverse Reinforcement Learning + Differentiable Trust Region Layers (TRIRL+DTRL)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/trirl_dtrl) in Flax
+- [Generative Adversarial Imitation Learning (GAIL)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/gail_ppo)
+- [Adversarial Inverse Reinforcement Learning (AIRL)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/airl_ppo)
+- [Adversarial Motion Priors (AMP)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/amp_ppo)
+- [Noise Conditioned Energy Based Annealed Rewards (NEAR)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/near_ppo)
+- [Trust Region Inverse Reinforcement Learning + Trust Region Loss (TRIRL+PPO)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/trirl_ppo)
+- [Trust Region Inverse Reinforcement Learning + Differentiable Trust Region Layers (TRIRL+DTRL)](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/trirl_dtrl)
+
+
+All six imitation/inverse-RL algorithms provide `flax`, `pytorch`, and `flax_full_jit` implementations.
+
 
 ### Usable Environments
 - [Gymnasium](https://github.com/Farama-Foundation/Gymnasium)
@@ -78,16 +103,12 @@ A framework for Reinforcement Learning research.
     - DeepMind Control Suite
 - [MuJoCo Playground](https://github.com/google-deepmind/mujoco_playground)
     - Locomotion
-- [Custom MuJoCo](https://github.com/nico-bohlinger/RL-X/tree/master/rl_x/environments/custom_mujoco)
-    - [MuJoCo Benchmarks](https://github.com/nico-bohlinger/RL-X/tree/master/rl_x/environments/custom_mujoco/gym) Ant, Half Cheetah, Hopper, Walker2D, Humanoid, and Point Maze.
-    - Example of a custom MuJoCo environment
-    - Example of a custom MuJoCo XLA (MJX) environment
-    - Example of a custom MuJoCo XLA (MJX) with Warp backend environment
-    - Example of a custom MuJoCo Warp with PyTorch environment
-- [Custom Robot Learning](https://github.com/nico-bohlinger/RL-X/tree/master/rl_x/environments/custom_mujoco/robot_locomotion)
-    - Example of custom MuJoCo, MJX and MJX + Warp environments for quadruped and humanoid locomotion learning and real robot deployment
-- [Custom RoboCup Soccer](https://github.com/nico-bohlinger/RL-X/tree/master/rl_x/environments/custom_mujoco/robocup_soccer)
-    - Example of custom MuJoCo and MJX environments for the RoboCup soccer simulation 3D league and other humanoid soccer leagues
+- [Custom MuJoCo](rl_x/environments/custom_mujoco/README.md)
+    - [MuJoCo benchmarks](rl_x/environments/custom_mujoco/gym): Ant, Half Cheetah, Hopper, Walker2D, Humanoid, and custom Point Maze
+    - [Ant velocity-tracking](rl_x/environments/custom_mujoco/ant/): Examples with MuJoCo, MJX, MJX Warp and Warp Torch backends
+    - [Robot locomotion](rl_x/environments/custom_mujoco/robot_locomotion/): Go2/G1 locomotion training and real-robot deployment
+    - [Robot motion tracking](rl_x/environments/custom_mujoco/robot_motion_tracking/): BeyondMimic-style G1 tracking of retargeted LAFAN/OMOMO motions
+    - [Custom RoboCup Soccer](https://github.com/nico-bohlinger/RL-X/tree/master/rl_x/environments/custom_mujoco/robocup_soccer): Example of custom MuJoCo and MJX environments for the RoboCup soccer simulation 3D league and other humanoid soccer leagues
 - [Custom Isaac Lab](https://github.com/nico-bohlinger/RL-X/tree/master/rl_x/environments/custom_isaac_lab)
     - Example of a custom Isaac Lab environment
 - [Custom ManiSkill](https://github.com/nico-bohlinger/RL-X/tree/master/rl_x/environments/custom_maniskill)
@@ -132,7 +153,7 @@ Example for Google Colab: [![Open In Colab](https://colab.research.google.com/as
 If you use RL-X in your research, please cite the following [paper](https://arxiv.org/abs/2310.13396):
 ```bibtex
 @incollection{bohlinger2023rlx,
-      title={RL-X: A Deep Reinforcement Learning Library (not only) for RoboCup}, 
+      title={RL-X: A Deep Reinforcement Learning Library (not only) for RoboCup},
       author={Nico Bohlinger and Klaus Dorer},
       booktitle={Robot World Cup},
       pages={228--239},

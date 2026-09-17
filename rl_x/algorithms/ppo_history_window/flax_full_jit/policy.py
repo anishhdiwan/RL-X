@@ -71,11 +71,11 @@ class Policy(nn.Module):
         return jnp.zeros((nr_envs, self.window_length, obs_dim), dtype=jnp.float32)
 
 
-    def _reset_window(self, window):
+    def reset_window(self, window):
         return jnp.zeros_like(window)
 
 
-    def _update_window(self, window, obs):
+    def update_window(self, window, obs):
         return jnp.concatenate([window[..., 1:, :], obs[..., None, :]], axis=-2)
 
 
@@ -131,7 +131,7 @@ class Policy(nn.Module):
         w_lat = self.window_encode(rolling_window)
         obs_lat = self.obs_encode(obs)
         mean, log_std = self.decode(obs_lat, w_lat)
-        next_window = self._update_window(rolling_window, obs)
+        next_window = self.update_window(rolling_window, obs)
         return mean, log_std, next_window
 
 
@@ -146,7 +146,7 @@ class Policy(nn.Module):
 
         def step(window, inp):
             obs_t, done_prev_t = inp
-            window = jnp.where(done_prev_t > 0.0, self._reset_window(window), window)
+            window = jnp.where(done_prev_t > 0.0, self.reset_window(window), window)
             mean_t, logstd_t, next_window = self.apply_one_step(obs_t, window)
             return next_window, (mean_t, logstd_t)
         

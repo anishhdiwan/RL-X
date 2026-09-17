@@ -20,17 +20,22 @@ Most documentation is available in the ```README.md``` files in the respective d
 - [```/rl_x/algorithms/airl_ppo/```](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/airl_ppo/README.md): Implementation details of the Adversarial Inverse Reinforcement Learning + Proximal Policy Optimization (AIRL+PPO) algorithm
 - [```/rl_x/algorithms/amp_ppo/```](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/amp_ppo/README.md): Implementation details of the Adversarial Motion Priors + Proximal Policy Optimization (AMP+PPO) algorithm
 - [```/rl_x/algorithms/aqe/```](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/aqe/README.md): Implementation details of the Aggressive Q-Learning with Ensembles (AQE) algorithm
+- [```/rl_x/algorithms/bro/```](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/bro/README.md): Implementation details of the Bigger, Regularized, Optimistic (BRO) algorithm
 - [```/rl_x/algorithms/c51/```](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/c51/README.md): Implementation details of the Categorical Deep Q-Network (C51) algorithm
 - [```/rl_x/algorithms/crossq/```](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/crossq/README.md): Implementation details of the CrossQ algorithm
 - [```/rl_x/algorithms/ddpg/```](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/ddpg/README.md): Implementation details of the Deep Deterministic Policy Gradient (DDPG) algorithm
-- [```/rl_x/algorithms/dqn/```](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/dqn/README.md): Implementation details of the Deep Q-Network (DQN) algorithm
 - [```/rl_x/algorithms/ddqn/```](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/ddqn/README.md): Implementation details of the Double Deep Q-Network (DDQN) algorithm
+- [```/rl_x/algorithms/dime/```](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/dime/README.md): Implementation details of Diffusion Models for Maximum Entropy Reinforcement Learning (DIME)
+- [```/rl_x/algorithms/dppo/```](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/dppo/README.md): Implementation details of Diffusion Policy Policy Optimization (DPPO)
+- [```/rl_x/algorithms/dqn/```](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/dqn/README.md): Implementation details of the Deep Q-Network (DQN) algorithm
 - [```/rl_x/algorithms/dqn_hl_gauss/```](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/dqn_hl_gauss/README.md): Implementation details of the Deep Q-Network with Histogram Loss using Gaussians (DQN HL-Gauss) algorithm
 - [```/rl_x/algorithms/droq/```](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/droq/README.md): Implementation details of the Dropout Q-Functions (DroQ) algorithm
 - [```/rl_x/algorithms/espo/```](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/espo/README.md): Implementation details of the Early Stopping Policy Optimization (ESPO) algorithm
 - [```/rl_x/algorithms/fastmpo/```](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/fastmpo/README.md): Implementation details of the Fast Maximum a Posteriori Policy Optimization (FastMPO) algorithm
 - [```/rl_x/algorithms/fastsac/```](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/fastsac/README.md): Implementation details of the Fast Soft Actor-Critic (FastSAC) algorithm
 - [```/rl_x/algorithms/fasttd3/```](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/fasttd3/README.md): Implementation details of the Fast Twin Delayed Deep Deterministic Gradient (FastTD3) algorithm
+- [```/rl_x/algorithms/flashsac/```](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/flashsac/README.md): Implementation details of the Flash Soft Actor-Critic (FlashSAC) algorithm
+- [```/rl_x/algorithms/fpo/```](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/fpo/README.md): Implementation details of Flow Policy Optimization (FPO)
 - [```/rl_x/algorithms/gail_ppo/```](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/gail_ppo/README.md): Implementation details of the Generative Adversarial Imitation Learning + Proximal Policy Optimization (GAIL+PPO) algorithm
 - [```/rl_x/algorithms/mpo/```](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/mpo/README.md): Implementation details of the Maximum a Posteriori Policy Optimization (MPO) algorithm
 - [```/rl_x/algorithms/near_ppo/```](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/near_ppo/README.md): Implementation details of the Noise-conditioned Energy-based Annealed Rewards (NEAR) + Proximal Policy Optimization (NEAR+PPO) algorithm
@@ -44,19 +49,26 @@ Most documentation is available in the ```README.md``` files in the respective d
 - [```/rl_x/algorithms/ppo_transformer/```](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/ppo_transformer/README.md): Implementation details of the Proximal Policy Optimization + Transformer (PPO+Transformer) algorithm
 - [```/rl_x/algorithms/pqn/```](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/pqn/README.md): Implementation details of the Parallelized Q-Network (PQN) algorithm
 - [```/rl_x/algorithms/redq/```](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/redq/README.md): Implementation details of the Randomized Ensembled Double Q-Learning (REDQ) algorithm
+- [```/rl_x/algorithms/reppo/```](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/reppo/README.md): Implementation details of the Relative Entropy Pathwise Policy Optimization (REPPO) algorithm
 - [```/rl_x/algorithms/sac/```](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/sac/README.md): Implementation details of the Soft Actor Critic (SAC) algorithm
+- [```/rl_x/algorithms/simba/```](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/simba/README.md): Implementation details of the Simplicity Bias (SimBa) algorithm
+- [```/rl_x/algorithms/simbav2/```](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/simbav2/README.md): Implementation details of the Simplicity Bias V2 (SimBaV2) algorithm
+- [```/rl_x/algorithms/spo/```](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/spo/README.md): Implementation details of Simple Policy Optimization (SPO)
 - [```/rl_x/algorithms/td3/```](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/td3/README.md): Implementation details of the Twin Delayed Deep Deterministic Gradient (TD3) algorithm
 - [```/rl_x/algorithms/tqc/```](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/tqc/README.md): Implementation details of the Truncated Quantile Critics (TQC) algorithm
 - [```/rl_x/algorithms/trirl_dtrl/```](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/trirl_dtrl/README.md): Implementation details of the Trust Region Inverse Reinforcement Learning + Differentiable Trust Region Layers (TRIRL+DTRL) algorithm
 - [```/rl_x/algorithms/trirl_ppo/```](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/trirl_ppo/README.md): Implementation details of the Trust Region Inverse Reinforcement Learning + Proximal Policy Optimization (TRIRL+PPO) algorithm
+- [```/rl_x/algorithms/trpo/```](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/trpo/README.md): Implementation details of Trust Region Policy Optimization (TRPO)
+- [```/rl_x/algorithms/xqc/```](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/algorithms/xqc/README.md): Implementation details of the XQC algorithm
 - [```/rl_x/environments/```](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/environments/README.md): Information on the folder structure of environments, how to add new environments and how to mix and match them with algorithms
 - [```/rl_x/environments/custom_interface/```](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/environments/custom_interface/README.md): Implementation details of the custom environment interface with simple socket communication
 - [```/rl_x/environments/custom_isaac_lab/```](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/environments/custom_isaac_lab/README.md): Implementation details of the custom Isaac Lab environment examples
 - [```/rl_x/environments/custom_maniskill/```](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/environments/custom_maniskill/README.md): Implementation details of the custom ManiSkill environment examples
-- [```/rl_x/environments/custom_mujoco/```](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/environments/custom_mujoco/README.md): Implementation details of the custom MuJoCo environment examples (plain MuJoCo, MJX, MJX+Warp, and MuJoCo Warp with PyTorch)
-- [```/rl_x/environments/custom_mujoco/robot_locomotion/```](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/environments/custom_mujoco/robot_locomotion/README.md): Details on the robot locomotion MuJoCo and MJX environments, to train a quadruped (Unitree Go2) or humanoid (Unitree G1) robot to walk
+- [```/rl_x/environments/custom_mujoco/```](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/environments/custom_mujoco/README.md): Custom MuJoCo tasks, available physics backends and algorithm interfaces
 - [```/rl_x/environments/custom_mujoco/robocup_soccer/```](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/environments/custom_mujoco/robocup_soccer/README.md): Details on the RoboCup soccer MuJoCo and MJX environments, to train humanoid robots for the RoboCup soccer simulation 3D league
+- [```/rl_x/environments/custom_mujoco/robot_locomotion/```](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/environments/custom_mujoco/robot_locomotion/README.md): Go2/G1 locomotion training and real-robot deployment
 - [```/rl_x/environments/custom_mujoco/robot_locomotion/deployment/unitree_go2/```](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/environments/custom_mujoco/robot_locomotion/deployment/unitree_go2/README.md): Instructions on how to use a trained policy to deploy it on a real Unitree Go2 robot
+- [```/rl_x/environments/custom_mujoco/robot_motion_tracking/```](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/environments/custom_mujoco/robot_motion_tracking/README.md): BeyondMimic-style G1 tracking of retargeted LAFAN/OMOMO motions
 - [```/rl_x/environments/envpool/```](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/environments/gym/README.md): Details of the EnvPool environments
 - [```/rl_x/environments/gym/```](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/environments/gym/README.md): Details of the Gymnasium environments
 - [```/rl_x/environments/mujoco_playground/```](https://github.com/nico-bohlinger/RL-X/blob/master/rl_x/environments/mujoco_playground/README.md): Details of the MuJoCo Playground environments
@@ -66,7 +78,7 @@ Most documentation is available in the ```README.md``` files in the respective d
 
 ## Detailed Installation Guide
 ### 1. Conda
-For Linux, MacOS and Windows, a conda environment is recommended.  
+For Linux, MacOS and Windows, a conda environment is recommended.
 All the code was tested with Python 3.11.4, other versions might work as well.
 ```
 conda create -n rlx python=3.11.4
@@ -161,7 +173,7 @@ pip install "numpy<2"
 
 
 ## Google Colab
-To run experiments in Google Colab take a look ```experiments/colab_experiment.ipynb``` or directly open it here:  [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/nico-bohlinger/RL-X/blob/master/experiments/colab_experiment.ipynb) 
+To run experiments in Google Colab take a look ```experiments/colab_experiment.ipynb``` or directly open it here:  [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/nico-bohlinger/RL-X/blob/master/experiments/colab_experiment.ipynb)
 
 
 
@@ -169,9 +181,9 @@ To run experiments in Google Colab take a look ```experiments/colab_experiment.i
 The gymnasium, custom MuJoCo and custom interface environments support parallel asynchronous vectorized environments with skipping.
 
 When using many parallel environments, it can happen that some environments are faster than others at a given time step.
-With the default implementation of the AsyncVectorEnv wrapper from gymnasium, a combined step is only completed once all environments have finished their step, which can lead to a lot of idle waiting time.  
+With the default implementation of the AsyncVectorEnv wrapper from gymnasium, a combined step is only completed once all environments have finished their step, which can lead to a lot of idle waiting time.
 Therefore, the AsyncVectorEnvWithSkipping wrapper allows to skip up to the slowest x% of environments and sends dummy values for the skipped environments to the algorithm instead.
-Be careful, this can lead to a learning performance decrease, depending on how many environments are skipped and how well the dummy values align with the environment.  
+Be careful, this can lead to a learning performance decrease, depending on how many environments are skipped and how well the dummy values align with the environment.
 Even when no environment should be skipped, the AsyncVectorEnvWithSkipping wrapper can still lead to a runtime improvement compared to the default gymnasium wrapper, because the latter waits sequentially for each environment to finish its step, while the former keeps looping over all environments until they are all finished.
 Therefore, it can already collect the data from some environments while the others are still running their step.
 
